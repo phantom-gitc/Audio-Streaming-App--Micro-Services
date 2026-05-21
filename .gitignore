@@ -1,0 +1,49 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs
+logs
+*.log
+pids
+*.pid
+
+# Build / coverage
+dist/
+build/
+coverage/
+.cache/
+.tmp/
+
+# Environment variables
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Swap and temporary files
+*.swp
+*.tmp
+
+# Misc
+.DS_Store
+
+# Service-specific temp
+uploads/
+
+# Optional lockfiles to ignore if you prefer
+# package-lock.json
