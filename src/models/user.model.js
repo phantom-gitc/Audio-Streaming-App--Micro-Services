@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     },
     lastName: {
       type: String,
-      required: true,
+      required: function() { return !this.googleId; },
     },
   },
 

@@ -2,6 +2,7 @@ import userModel from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
+import { publishToQueue } from "../broker/rabbit.js";
 
 // Register a new User
 
@@ -49,6 +50,15 @@ export async function register(req, res) {
         { expiresIn: "2d" },
     );
 
+    // Publish the user creation event to RabbitMQ.
+
+    await publishToQueue("user_created", {
+        id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+    });
+
     // set the token in the cookie
     res.cookie("token", token);
 
@@ -69,6 +79,7 @@ export async function register(req, res) {
 //Google OAuth callback handler
 
 export async function googleOAuthCallback(req, res) {
+    
     const user = req.user;
 
     const isUserAlreadyExist = await userModel.findOne({
@@ -92,10 +103,19 @@ export async function googleOAuthCallback(req, res) {
               config.JWT_SECRET,
             { expiresIn: "2d" },
         );
-
         // set the token in the cookie
         res.cookie("token", token);
 
+        try {
+            await publishToQueue("user_logged_in", {
+                id: isUserAlreadyExist._id,
+                email: isUserAlreadyExist.email,
+                fullName: isUserAlreadyExist.fullName,
+                role: isUserAlreadyExist.role,
+            });
+        } catch (error) {
+            console.error("Failed to publish login event:", error);
+        }
 
         // Send the response to the client with user details 
 
@@ -106,19 +126,37 @@ export async function googleOAuthCallback(req, res) {
                 email: isUserAlreadyExist.email,
                 fullName: isUserAlreadyExist.fullName,
             },
+
+            
         });
+
+
     }
 
     // If user does not exist, create a new user
 
+    const displayName = user.displayName || '';
+    const nameParts = displayName.trim().split(' ').filter(Boolean);
+    const firstName = user.name?.givenName || nameParts[0] || 'User';
+    const lastName = user.name?.familyName || nameParts.slice(1).join(' ') || 'Google';
+
     const newUser = await userModel.create({
         email: user.emails[0].value,
         fullName: {
-            firstName: user.name.givenName,
-            lastName: user.name.familyName,
+            firstName,
+            lastName,
         },
         googleId: user.id, // Store the Google ID for future reference
     })
+
+        // Publish the user creation event to RabbitMQ.
+
+        await publishToQueue("user_created", {
+        id: newUser._id,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        role: newUser.role,
+    });
 
     // Generate JWT Token
 
