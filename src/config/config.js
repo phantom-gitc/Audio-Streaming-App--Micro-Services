@@ -1,4 +1,4 @@
-import {config as dotenvConfig} from 'dotenv';
+import { config as dotenvConfig } from "dotenv";
 
 // Load environment variables from .env file
 
@@ -7,10 +7,10 @@ dotenvConfig();
 // Configuration object to hold all the configuration variables
 
 const _config = {
-    MONGO_URI: process.env.MONGO_URI ,
-    JWT_SECRET: process.env.JWT_SECRET
+  MONGO_URI: process.env.MONGO_URI,
+  JWT_SECRET: process.env.JWT_SECRET,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
 };
 
-
 export default _config;
-
